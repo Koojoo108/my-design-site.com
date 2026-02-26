@@ -99,6 +99,30 @@
             75% { transform: translateX(-5px); }
         }
         .animate-shake { animation: shake 0.4s ease-in-out; }
+
+        /* Login Modal Specific Styles */
+        #login-modal {
+            transition: opacity 0.3s ease;
+        }
+        #login-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #login-modal:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #login-modal-content {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        #login-modal.hidden #login-modal-content {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        #login-modal:not(.hidden) #login-modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-light text-slate-800 dark:bg-dark dark:text-slate-100 transition-colors duration-300 font-sans antialiased">
@@ -121,6 +145,11 @@
                     <a href="#" onclick="router.navigate('cv')" class="nav-link text-sm font-medium hover:text-primary transition-colors">CV</a>
                     <a href="#" onclick="router.navigate('events')" class="nav-link text-sm font-medium hover:text-primary transition-colors">Events</a>
                     <a href="#" onclick="router.navigate('contact')" class="nav-link text-sm font-medium hover:text-primary transition-colors">Contact</a>
+                    
+                    <!-- Admin Button - Always visible, shows login modal if not authenticated -->
+                    <button onclick="authManager.showLoginModal()" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title="Admin Access">
+                        <i class="fas fa-shield-alt text-slate-600 dark:text-slate-300"></i>
+                    </button>
                     
                     <div class="h-6 w-px bg-slate-300 dark:bg-slate-700 mx-2"></div>
                     <button onclick="themeManager.toggle()" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
@@ -148,6 +177,9 @@
                 <a href="#" onclick="router.navigate('cv')" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-200 dark:hover:bg-slate-700">CV</a>
                 <a href="#" onclick="router.navigate('events')" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-200 dark:hover:bg-slate-700">Events</a>
                 <a href="#" onclick="router.navigate('contact')" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-200 dark:hover:bg-slate-700">Contact</a>
+                <a href="#" onclick="authManager.showLoginModal()" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-200 dark:hover:bg-slate-700 text-blue-600">
+                    <i class="fas fa-shield-alt mr-2"></i> Admin Access
+                </a>
             </div>
         </div>
     </nav>
@@ -338,46 +370,7 @@
             </div>
         </section>
 
-        <!-- ADMIN LOGIN -->
-        <section id="page-login" class="page-section bg-slate-50 dark:bg-slate-900/50 min-h-[calc(100vh-64px)] flex items-center justify-center p-4">
-            <div class="max-w-md w-full bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-200 dark:border-slate-700 transform transition-all duration-300">
-                <div class="text-center mb-8">
-                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-lock text-2xl text-blue-600 dark:text-blue-400"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Admin Login</h2>
-                    <p class="text-slate-500 dark:text-slate-400 mt-2">Enter your credentials to access the dashboard</p>
-                </div>
-                <form onsubmit="authManager.handleLogin(event)" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Username / Email</label>
-                        <div class="relative">
-                            <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="email" id="login-email" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="admin@example.com">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Password</label>
-                        <div class="relative">
-                            <i class="fas fa-key absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="password" id="login-password" required class="w-full pl-10 pr-10 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="••••••••">
-                            <button type="button" onclick="authManager.togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                <i class="fas fa-eye" id="password-toggle-icon"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="login-error" class="hidden text-red-500 text-sm font-medium text-center">
-                        Invalid credentials. Please try again.
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-blue-500/30 flex items-center justify-center gap-2">
-                        <span>Login to Dashboard</span>
-                        <i class="fas fa-sign-in-alt"></i>
-                    </button>
-                </form>
-            </div>
-        </section>
-
-        <!-- ADMIN DASHBOARD -->
+        <!-- ADMIN DASHBOARD - Only visible after login -->
         <section id="page-admin" class="page-section">
             <div class="flex h-[calc(100vh-64px)] overflow-hidden bg-slate-100 dark:bg-slate-900">
                 
@@ -702,6 +695,55 @@
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
         <i class="fas fa-check-circle text-green-400"></i>
         <span id="toast-message">Operation successful</span>
+    </div>
+
+    <!-- Login Modal - Popup style, separate from main content -->
+    <div id="login-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div id="login-modal-content" class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-slate-200 dark:border-slate-700 relative">
+            <!-- Close button -->
+            <button onclick="authManager.closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-lock text-2xl text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Admin Login</h2>
+                <p class="text-slate-500 dark:text-slate-400 mt-2">Enter your credentials to access the dashboard</p>
+            </div>
+            
+            <form onsubmit="authManager.handleLogin(event)" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Username / Email</label>
+                    <div class="relative">
+                        <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="email" id="login-email" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="admin@example.com">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Password</label>
+                    <div class="relative">
+                        <i class="fas fa-key absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="password" id="login-password" required class="w-full pl-10 pr-10 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="••••••••">
+                        <button type="button" onclick="authManager.togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                            <i class="fas fa-eye" id="password-toggle-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="login-error" class="hidden text-red-500 text-sm font-medium text-center bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                    Invalid credentials. Please try again.
+                </div>
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-blue-500/30 flex items-center justify-center gap-2">
+                    <span>Login to Dashboard</span>
+                    <i class="fas fa-sign-in-alt"></i>
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-xs text-slate-400">Press ESC to close</p>
+            </div>
+        </div>
     </div>
 
     <!-- Certificate Modal -->
@@ -1096,6 +1138,29 @@
                 this.isAuthenticated = sessionStorage.getItem('portfolio_auth') === 'true';
             },
             
+            showLoginModal() {
+                // If already authenticated, go directly to admin dashboard
+                if (this.isAuthenticated) {
+                    router.navigate('admin');
+                    return;
+                }
+                
+                const modal = document.getElementById('login-modal');
+                modal.classList.remove('hidden');
+                // Focus on email input
+                setTimeout(() => document.getElementById('login-email').focus(), 100);
+            },
+            
+            closeLoginModal() {
+                const modal = document.getElementById('login-modal');
+                modal.classList.add('hidden');
+                // Clear error message
+                document.getElementById('login-error').classList.add('hidden');
+                // Clear form
+                document.getElementById('login-email').value = '';
+                document.getElementById('login-password').value = '';
+            },
+            
             handleLogin(e) {
                 e.preventDefault();
                 const email = document.getElementById('login-email').value;
@@ -1110,10 +1175,16 @@
                     this.isAuthenticated = true;
                     sessionStorage.setItem('portfolio_auth', 'true');
                     errorEl.classList.add('hidden');
+                    
+                    // Close modal first
+                    this.closeLoginModal();
+                    
                     ui.showToast('Login successful!');
+                    
+                    // Navigate to admin dashboard after a short delay
                     setTimeout(() => {
                         router.navigate('admin');
-                    }, 50);
+                    }, 300);
                 } else {
                     errorEl.classList.remove('hidden');
                     // Shake effect on form
@@ -1149,14 +1220,10 @@
             history: [],
             
             navigate(pageId) {
-                // If trying to access admin dashboard and not authenticated, go to login
+                // Check authentication for admin page
                 if (pageId === 'admin' && !authManager.isAuthenticated) {
-                    this.navigate('login');
-                    return;
-                }
-                // If trying to access login page and already authenticated, go to admin dashboard
-                if (pageId === 'login' && authManager.isAuthenticated) {
-                    this.navigate('admin'); // Redirect to admin dashboard
+                    // Show login modal instead of navigating
+                    authManager.showLoginModal();
                     return;
                 }
 
@@ -2226,19 +2293,27 @@
             if(document.getElementById('page-home').classList.contains('active')) {
                 setTimeout(() => router.animateCounters(), 500);
             }
+
+            // Close login modal when clicking outside
+            document.getElementById('login-modal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    authManager.closeLoginModal();
+                }
+            });
+
+            // Close login modal on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    authManager.closeLoginModal();
+                }
+            });
         });
 
         // Global keyboard shortcut for Admin Login (Ctrl + Alt + L)
         document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.altKey && e.key === 'l' || e.key === 'L') {
-                e.preventDefault(); // Prevent browser's default action for this shortcut
-                if (!authManager.isAuthenticated) {
-                    router.navigate('admin'); // Navigates to login if not authenticated, or directly to admin if already authenticated (due to router logic)
-                    ui.showToast('Admin login initiated via shortcut');
-                } else {
-                    router.navigate('admin'); // If already logged in, navigate to admin dashboard
-                    ui.showToast('Already logged in, navigating to admin dashboard');
-                }
+            if (e.ctrlKey && e.altKey && (e.key === 'l' || e.key === 'L')) {
+                e.preventDefault();
+                authManager.showLoginModal();
             }
         });
 
